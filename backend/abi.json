@@ -71,7 +71,7 @@
     "inputs": [
       { "internalType": "address", "name": "_user", "type": "address" }
     ],
-    "name": "getMyRequests",
+    "name": "getMyRequest",
     "outputs": [
       { "internalType": "address[]", "name": "", "type": "address[]" },
       { "internalType": "uint256[]", "name": "", "type": "uint256[]" },

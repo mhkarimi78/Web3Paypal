@@ -1,14 +1,41 @@
 import React, { useState, useEffect } from "react";
 import { DollarOutlined, SwapOutlined } from "@ant-design/icons";
 import { Modal, Input, InputNumber } from "antd";
+import {
+  usePrepareContractWrite,
+  useContractWrite,
+  useWaitForTransaction,
+} from "wagmi";
+import { polygonMumbai } from "@wagmi/chains";
+import ABI from "../abi.json";
 
-
-function RequestAndPay({}) {
+function RequestAndPay({ requests, getNameAndBalance }) {
   const [payModal, setPayModal] = useState(false);
   const [requestModal, setRequestModal] = useState(false);
   const [requestAmount, setRequestAmount] = useState(5);
   const [requestAddress, setRequestAddress] = useState("");
   const [requestMessage, setRequestMessage] = useState("");
+
+  const { config } = usePrepareContractWrite({
+    chainId: polygonMumbai.id,
+    address: "0xc777B228Af89471A5B2265660084D7C7451cb81d",
+    abi: ABI,
+    functionName: "payRequest",
+    args: [0],
+    overrides: {
+      value: String(Number(requests["1"][0] * 1e18)),
+    },
+  });
+
+  const { write, data } = useContractWrite(config);
+  const { isSuccess } = useWaitForTransaction({
+    hash: data?.hash,
+  });
+  useEffect(() => {
+    if (isSuccess) {
+      getNameAndBalance();
+    }
+  }, [isSuccess]);
 
   const showPayModal = () => {
     setPayModal(true);
@@ -31,11 +58,19 @@ function RequestAndPay({}) {
         open={payModal}
         onOk={() => {
           hidePayModal();
+          write?.();
         }}
         onCancel={hidePayModal}
         okText="Proceed To Pay"
         cancelText="Cancel"
       >
+        {requests && requests["0"].length > 0 && (
+          <>
+            <h2>Sending payment to {requests["3"][0]}</h2>
+            <h3>Value: {requests["1"][0]} Matic</h3>
+            <p>"{requests["2"][0]}"</p>
+          </>
+        )}
       </Modal>
       <Modal
         title="Request A Payment"
@@ -48,11 +83,22 @@ function RequestAndPay({}) {
         cancelText="Cancel"
       >
         <p>Amount (Matic)</p>
-        <InputNumber value={requestAmount} onChange={(val)=>setRequestAmount(val)}/>
+        <InputNumber
+          value={requestAmount}
+          onChange={(val) => setRequestAmount(val)}
+        />
         <p>From (address)</p>
-        <Input placeholder="0x..." value={requestAddress} onChange={(val)=>setRequestAddress(val.target.value)}/>
+        <Input
+          placeholder="0x..."
+          value={requestAddress}
+          onChange={(val) => setRequestAddress(val.target.value)}
+        />
         <p>Message</p>
-        <Input placeholder="Lunch Bill..." value={requestMessage} onChange={(val)=>setRequestMessage(val.target.value)}/>
+        <Input
+          placeholder="Lunch Bill..."
+          value={requestMessage}
+          onChange={(val) => setRequestMessage(val.target.value)}
+        />
       </Modal>
       <div className="requestAndPay">
         <div
@@ -63,7 +109,7 @@ function RequestAndPay({}) {
         >
           <DollarOutlined style={{ fontSize: "26px" }} />
           Pay
-            <div className="numReqs">2</div>
+          <div className="numReqs">{requests["0"].length}</div>
         </div>
         <div
           className="quickOption"
