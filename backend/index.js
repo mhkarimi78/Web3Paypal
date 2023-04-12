@@ -39,14 +39,14 @@ app.get("/getNameAndBalance", async (req, res) => {
     address: userAddress,
   });
   const jsonResponseBal = (secResponse.raw.balance / 1e18).toFixed(2);
-  const thirdResponse = await Moralis.EvmApi.token.getTokenPrice({
-    address,
-    chain,
-  });
-  console.log("jj", thirdResponse.toJSON());
-  const jsonResponseDollars = (
-    thirdResponse.raw.usdPrice * jsonResponseBal
-  ).toFixed(2);
+  // const thirdResponse = await Moralis.EvmApi.token.getTokenPrice({
+  //   address,
+  //   chain,
+  // });
+  // console.log("jj", thirdResponse.toJSON());
+  // const jsonResponseDollars = (
+  //   thirdResponse.raw.usdPrice * jsonResponseBal
+  // ).toFixed(2);
   const fourthResponse = await Moralis.EvmApi.utils.runContractFunction({
     chain: "0x13881",
     address: "0xc777B228Af89471A5B2265660084D7C7451cb81d", // contract address
@@ -66,7 +66,7 @@ app.get("/getNameAndBalance", async (req, res) => {
   const jsonResponse = {
     name: jsonResponseName,
     balance: jsonResponseBal,
-    dollars: jsonResponseDollars,
+    // dollars: jsonResponseDollars,
     history: jsonResponseHistory,
     requests: jsonResponseRequests,
   };

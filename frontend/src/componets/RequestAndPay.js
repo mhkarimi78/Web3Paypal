@@ -31,11 +31,25 @@ function RequestAndPay({ requests, getNameAndBalance }) {
   const { isSuccess } = useWaitForTransaction({
     hash: data?.hash,
   });
+  const { config: configRequest } = usePrepareContractWrite({
+    chainId: polygonMumbai.id,
+    address: "0xc777B228Af89471A5B2265660084D7C7451cb81d",
+    abi: ABI,
+    functionName: "createRequest",
+    args: [requestAddress, requestAmount, requestMessage],
+  });
+
+  const { write: writeRequest, date: dataRequest } =
+    useContractWrite(configRequest);
+  const { isSuccess: isSuccessRequest } = useWaitForTransaction({
+    hash: dataRequest?.hash,
+  });
+
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess || isSuccessRequest) {
       getNameAndBalance();
     }
-  }, [isSuccess]);
+  }, [isSuccess, isSuccessRequest]);
 
   const showPayModal = () => {
     setPayModal(true);
@@ -77,6 +91,7 @@ function RequestAndPay({ requests, getNameAndBalance }) {
         open={requestModal}
         onOk={() => {
           hideRequestModal();
+          writeRequest?.();
         }}
         onCancel={hideRequestModal}
         okText="Proceed To Request"
